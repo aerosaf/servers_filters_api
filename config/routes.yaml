@@ -1,0 +1,3 @@
+server_list:
+    path: /server/list
+    controller: App\Controller\ServerController::list
