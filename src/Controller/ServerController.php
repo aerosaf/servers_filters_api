@@ -21,20 +21,20 @@ class ServerController extends AbstractController
         $absolutePath = $projectDir . '/public/LeaseWeb_servers_filters_assignment.xlsx';
         $spreadsheet = IOFactory::load($absolutePath);
         $worksheet = $spreadsheet->getActiveSheet();
-        
+
         foreach ($worksheet->getRowIterator(2) as $row) {
             $server = new Server();
-            $server->setModel($worksheet->getCell('A'.$row->getRowIndex())->getValue());
-            $server->setRam($worksheet->getCell('B'.$row->getRowIndex())->getValue());
-            $server->setHdd($worksheet->getCell('C'.$row->getRowIndex())->getValue());
-            $server->setLocation($worksheet->getCell('D'.$row->getRowIndex())->getValue());
-            $server->setPrice($worksheet->getCell('E'.$row->getRowIndex())->getValue());
+            $server->setModel($worksheet->getCell('A' . $row->getRowIndex())->getValue());
+            $server->setRam($worksheet->getCell('B' . $row->getRowIndex())->getValue());
+            $server->setHdd($worksheet->getCell('C' . $row->getRowIndex())->getValue());
+            $server->setLocation($worksheet->getCell('D' . $row->getRowIndex())->getValue());
+            $server->setPrice($worksheet->getCell('E' . $row->getRowIndex())->getValue());
             // populate $this->servers from Excel file
             $this->servers[] = $server;
         }
     }
 
-    #[Route("/server/list", name:"server_list")]
+    #[Route("/server/list", name: "server_list")]
     public function list(Request $request): JsonResponse
     {
         $filteredServers = $this->servers;
@@ -55,7 +55,7 @@ class ServerController extends AbstractController
             $ramValues = explode(',', $ram);
             $filteredServers = array_filter($filteredServers, function ($server) use ($ramValues) {
                 foreach ($ramValues as $values) {
-                    if (preg_match('/^'.$values.'/', $server->getRam())) {
+                    if (preg_match('/^' . $values . '/', $server->getRam())) {
                         return $server;
                     }
                 }
@@ -80,7 +80,18 @@ class ServerController extends AbstractController
 
         // return filtered products
         return $this->json([
-            'data' => $filteredServers
+            'data' => array_values($filteredServers)
+        ]);
+    }
+
+    #[Route("/server/location", name: "server_location")]
+    public function location(): JsonResponse
+    {
+        $locations = array_map(function ($server) {
+            return $server->getLocation();
+        }, $this->servers);
+        return $this->json([
+            'data' => array_values(array_unique($locations))
         ]);
     }
 }
