@@ -71,8 +71,8 @@ class Server
                 $this->setStorage(self::SATA);
               break;
             case str_contains($hdd, self::SSD):
-                $this->hardDiskType = self::SAS;
-                $this->setStorage(self::SAS);
+                $this->hardDiskType = self::SSD;
+                $this->setStorage(self::SSD);
               break;
             case str_contains($hdd, self::SAS):
                 $this->hardDiskType = self::SAS;
