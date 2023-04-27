@@ -74,7 +74,7 @@ class ServerController extends AbstractController
         $location = $request->query->get('location');
         if ($location) {
             $filteredServers = array_filter($filteredServers, function ($server) use ($location) {
-                return $server->getLocation() === $location;
+                return $server->getLocation() === urldecode($location);
             });
         }
 
