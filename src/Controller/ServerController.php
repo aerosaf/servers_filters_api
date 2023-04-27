@@ -37,8 +37,50 @@ class ServerController extends AbstractController
     #[Route("/server/list", name:"server_list")]
     public function list(Request $request): JsonResponse
     {
+        $filteredServers = $this->servers;
+
+        // filter by storage
+        $minStorage = $request->query->get('minStorage');
+        $maxStorage = $request->query->get('maxStorage');
+        if ($maxStorage && $maxStorage) {
+            $filteredServers = array_filter($filteredServers, function ($server) use ($minStorage, $maxStorage) {
+                $serverStorage = $server->getStorage();
+                return $serverStorage >= $minStorage && $serverStorage <= $maxStorage;
+            });
+        }
+
+        // filter by RAM
+        $ram = $request->query->get('ram');
+        if ($ram) {
+            $ramValues = explode(',', $ram);
+            $filteredServers = array_filter($filteredServers, function ($server) use ($ramValues) {
+                foreach ($ramValues as $values) {
+                    if (preg_match('/^'.$values.'/', $server->getRam())) {
+                        return $server;
+                    }
+                }
+            });
+        }
+
+        // filter by harddisk type
+        $harddiskType = $request->query->get('harddisk_type');
+        if ($harddiskType) {
+            $filteredServers = array_filter($filteredServers, function ($server) use ($harddiskType) {
+                return $server->getHarddiskType() === $harddiskType;
+            });
+        }
+
+        // filter by location
+        $location = $request->query->get('location');
+        if ($location) {
+            $filteredServers = array_filter($filteredServers, function ($server) use ($location) {
+                return $server->getLocation() === $location;
+            });
+        }
+
+        // return filtered products
         return $this->json([
-            'data' => $this->servers
+            'data' => $filteredServers
         ]);
     }
 }
