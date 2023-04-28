@@ -2,9 +2,11 @@
 
 namespace App\Entity;
 
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 
-class Server
+class ServerExcel
 {
     private $model;
     private $ram;
@@ -23,6 +25,25 @@ class Server
     const GB_IN_TB = 1000;
     const UNIT_GB = 'GB';
     const UNIT_TB = 'TB';
+
+    public function __construct()
+    {
+        $kernel = new KernelInterface;
+        $absolutePath = $kernel->getProjectDir() . '/public/LeaseWeb_servers_filters_assignment.xlsx';
+        $spreadsheet = IOFactory::load($absolutePath);
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        foreach ($worksheet->getRowIterator(2) as $row) {
+            $server = new $this;
+            $server->setModel($worksheet->getCell('A' . $row->getRowIndex())->getValue());
+            $server->setRam($worksheet->getCell('B' . $row->getRowIndex())->getValue());
+            $server->setHdd($worksheet->getCell('C' . $row->getRowIndex())->getValue());
+            $server->setLocation($worksheet->getCell('D' . $row->getRowIndex())->getValue());
+            $server->setPrice($worksheet->getCell('E' . $row->getRowIndex())->getValue());
+            $this->servers[] = $server;
+        }
+    }
+
 
     public function getModel(): ?string
     {
