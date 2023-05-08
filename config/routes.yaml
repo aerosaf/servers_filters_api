@@ -1,6 +1,6 @@
 server_list:
     path: /server/list
-    controller: App\Controller\ServerController::list
+    controller: App\Controller\ServerController::listServers
 server_location:
     path: /server/location
-    controller: App\Controller\ServerController::location
+    controller: App\Controller\ServerController::listServerLocations

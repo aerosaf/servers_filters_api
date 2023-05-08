@@ -1,28 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
+use InvalidArgumentException;
 
+/**
+ * Class Server
+ */
 class Server
 {
-    private $model;
-    private $ram;
-    private $hdd;
-    private $location;
-    private $price;
-    private $hardDiskType;
-    private $storage;
-    private $servers;
+    private string $model;
+    private string $ram;
+    private string $hdd;
+    private string $location;
+    private string $price;
+    private string $hardDiskType;
+    private int $storage;
+    private array $servers = [];
 
     // Define constants
-    const SSD = 'SSD';
-    const SATA = 'SATA2';
-    const SAS = 'SAS';
+    private const SSD = 'SSD';
+    private const SATA = 'SATA2';
+    private const SAS = 'SAS';
 
-    const GB_IN_TB = 1000;
-    const UNIT_GB = 'GB';
-    const UNIT_TB = 'TB';
+    private const GB_IN_TB = 1000;
+    private const UNIT_GB = 'GB';
+    private const UNIT_TB = 'TB';
 
     public function getModel(): ?string
     {
@@ -58,7 +63,7 @@ class Server
         return $this->hardDiskType;
     }
 
-    public function getStorage(): ?string
+    public function getStorage(): ?int
     {
         return $this->storage;
     }
@@ -66,50 +71,46 @@ class Server
     public function setHdd(string $hdd): self
     {
         $this->hdd = $hdd;
-        switch ($hdd) {
-            case str_contains($hdd, self::SATA):
-                $this->hardDiskType = self::SATA;
-                $this->setStorage(self::SATA);
-              break;
-            case str_contains($hdd, self::SSD):
-                $this->hardDiskType = self::SSD;
-                $this->setStorage(self::SSD);
-              break;
-            case str_contains($hdd, self::SAS):
-                $this->hardDiskType = self::SAS;
-                $this->setStorage(self::SAS);
-              break;
-          }
+        $this->setHardDiskTypeAndStorage($hdd);
 
         return $this;
     }
 
-    public function setStorage($type): self
+    private function setHardDiskTypeAndStorage(string $hdd): void
     {
-        // Validate input
+        if (str_contains($hdd, self::SATA)) {
+            $this->hardDiskType = self::SATA;
+        } elseif (str_contains($hdd, self::SSD)) {
+            $this->hardDiskType = self::SSD;
+        } elseif (str_contains($hdd, self::SAS)) {
+            $this->hardDiskType = self::SAS;
+        } else {
+            throw new InvalidArgumentException('Invalid hard disk type');
+        }
+
+        $this->setStorage($this->hardDiskType);
+    }
+
+    private function setStorage(string $type): void
+    {
         if (!is_string($this->hdd) || !preg_match('/(GB|TB)/', $this->hdd)) {
             throw new InvalidArgumentException('Invalid storage type');
         }
-        
-        // Extract storage size
+
         $storage = str_replace($type, '', $this->hdd);
         $storage = explode('x', $storage);
-        
-        // Calculate storage size
+
         if (str_contains($storage[1], self::UNIT_GB)) {
             $storage[1] = str_replace(self::UNIT_GB, '', $storage[1]);
-            $storageSize = (int) $storage[0] * (int) $storage[1];
-        } else if (str_contains($storage[1], self::UNIT_TB)) {
+            $storageSize = (int)$storage[0] * (int)$storage[1];
+        } elseif (str_contains($storage[1], self::UNIT_TB)) {
             $storage[1] = str_replace(self::UNIT_TB, '', $storage[1]);
-            $storageSize = (int) $storage[0] * (int) $storage[1] * self::GB_IN_TB;
+            $storageSize = (int)$storage[0] * (int)$storage[1] * self::GB_IN_TB;
         } else {
             throw new InvalidArgumentException('Invalid storage size');
         }
-        
-        // Set storage size
-        $this->storage = $storageSize;
 
-        return $this;
+        $this->storage = $storageSize;
     }
 
     public function getLocation(): ?string
@@ -136,8 +137,8 @@ class Server
         return $this;
     }
 
-    public function getAll()
+    public function getAll(): array
     {
-       return $this->servers;
+        return $this->servers;
     }
 }
